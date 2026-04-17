@@ -1,0 +1,15 @@
+# Node.js
+node_modules/
+
+# IDEs
+.vscode/
+.idea/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+
+# Environment Variables
+.env
