@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Glucosa App</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+.card {
+  background: #1e293b;
+  padding: 15px;
+  margin: 12px auto;
+  border-radius: 15px;
+  width: 320px;
+}
+input, button {
+  padding: 10px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+}
+button {
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+.danger { color: red; }
+.good { color: #22c55e; }
+.low { color: #3b82f6; }
+</style>
+</head>
+
+<body>
+
+<h1>📊 Glucosa App</h1>
+
+<div class="card">
+  <h3>Datos</h3>
+  <input id="glucosa" placeholder="Glucosa"><br>
+  <input id="carbs" placeholder="Carbohidratos"><br>
+</div>
+
+<div class="card">
+  <h3>Configuración</h3>
+  <input id="ratio" placeholder="Ratio"><br>
+  <input id="factor" placeholder="Factor"><br>
+  <input id="objetivo" placeholder="Objetivo"><br>
+</div>
+
+<button onclick="guardar()">Guardar</button>
+<button onclick="borrar()">Borrar historial</button>
+
+<div class="card">
+  <h3 id="resultado">---</h3>
+  <small>⚠️ Estimación, consulta con tu médico</small>
+</div>
+
+<div class="card">
+  <canvas id="grafica"></canvas>
+</div>
+
+<div class="card">
+  <h3>Historial</h3>
+  <ul id="historial"></ul>
+</div>
+
+<script>
+let datos = JSON.parse(localStorage.getItem("datos")) || [];
+
+// cargar configuración guardada
+document.getElementById("ratio").value = localStorage.getItem("ratio") || "";
+document.getElementById("factor").value = localStorage.getItem("factor") || "";
+document.getElementById("objetivo").value = localStorage.getItem("objetivo") || "";
+
+function guardar() {
+  let glucosa = parseFloat(document.getElementById("glucosa").value);
+  let carbs = parseFloat(document.getElementById("carbs").value);
+  let ratio = parseFloat(document.getElementById("ratio").value);
+  let factor = parseFloat(document.getElementById("factor").value);
+  let objetivo = parseFloat(document.getElementById("objetivo").value);
+
+  // guardar config
+  localStorage.setItem("ratio", ratio);
+  localStorage.setItem("factor", factor);
+  localStorage.setItem("objetivo", objetivo);
+
+  let insulina = (carbs/ratio) + ((glucosa-objetivo)/factor);
+  insulina = insulina.toFixed(2);
+
+  document.getElementById("resultado").innerText = insulina + " unidades";
+
+  let fecha = new Date().toLocaleString();
+
+  let registro = { glucosa, insulina, fecha };
+  datos.push(registro);
+
+  localStorage.setItem("datos", JSON.stringify(datos));
+
+  mostrar();
+}
+
+function colorGlucosa(valor){
+  if(valor < 70) return "low";
+  if(valor > 180) return "danger";
+  return "good";
+}
+
+function mostrar() {
+  let lista = document.getElementById("historial");
+  lista.innerHTML = "";
+
+  let glucosas = [];
+  let fechas = [];
+
+  datos.forEach(d => {
+    let li = document.createElement("li");
+    li.className = colorGlucosa(d.glucosa);
+    li.innerText = `${d.fecha} | ${d.glucosa} → ${d.insulina}u`;
+    lista.appendChild(li);
+
+    glucosas.push(d.glucosa);
+    fechas.push(d.fecha);
+  });
+
+  dibujarGrafica(fechas, glucosas);
+}
+
+let chart;
+
+function dibujarGrafica(fechas, glucosas) {
+  if(chart) chart.destroy();
+
+  chart = new Chart(document.getElementById("grafica"), {
+    type: "line",
+    data: {
+      labels: fechas,
+      datasets: [{
+        label: "Glucosa",
+        data: glucosas
+      }]
+    }
+  });
+}
+
+function borrar(){
+  localStorage.clear();
+  datos = [];
+  mostrar();
+}
+
+mostrar();
+</script>
+
+</body>
+</html>
