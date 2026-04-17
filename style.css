@@ -1,0 +1,27 @@
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+}
+.card {
+  background: #1e293b;
+  padding: 15px;
+  margin: 12px auto;
+  border-radius: 15px;
+  width: 320px;
+}
+input, button {
+  padding: 10px;
+  margin: 6px;
+  border-radius: 10px;
+  border: none;
+}
+button {
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+}
+.danger { color: red; }
+.good { color: #22c55e; }
+.low { color: #3b82f6; }
